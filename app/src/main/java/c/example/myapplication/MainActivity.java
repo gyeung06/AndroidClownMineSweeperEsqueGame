@@ -1,6 +1,8 @@
 package c.example.myapplication;
 
 import android.content.Intent;
+import android.graphics.drawable.AnimatedVectorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -12,6 +14,7 @@ import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
         iniSkipButton();
         startTimer();
+
 
     }
 
@@ -49,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = MainMenu.makeIntent(MainActivity.this);
                 startActivity(intent);
             }
-        }, 4000);
+        }, 5000);
     }
 
     @Override
