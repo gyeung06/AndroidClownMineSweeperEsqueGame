@@ -6,4 +6,6 @@
         <item>"6 Rows by 15 Columns"</item>
     </string-array>
 
+    <string name="row_default">"4 Rows by 6 Columns"</string>
+
 </resources>
