@@ -1,8 +1,6 @@
 package c.example.myapplication;
 
 import android.content.Intent;
-import android.graphics.drawable.AnimatedVectorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -14,12 +12,18 @@ import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
+/*
+Welcome splash screen for the game
+ */
+
 public class MainActivity extends AppCompatActivity {
+    Timer timer = new Timer();
+    private boolean ifSkipped = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,28 +34,28 @@ public class MainActivity extends AppCompatActivity {
 
         iniSkipButton();
         startTimer();
-
-
     }
 
-    public void iniSkipButton() {
+    private void iniSkipButton() {
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = MainMenu.makeIntent(MainActivity.this);
                 startActivity(intent);
+                ifSkipped = true;
             }
         });
     }
 
-    public void startTimer() {
-        Timer timer = new Timer();
+    private void startTimer() {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                Intent intent = MainMenu.makeIntent(MainActivity.this);
-                startActivity(intent);
+                if (!ifSkipped) {
+                    Intent intent = MainMenu.makeIntent(MainActivity.this);
+                    startActivity(intent);
+                }
             }
         }, 5000);
     }
