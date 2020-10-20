@@ -12,11 +12,16 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.view.View;
 
+
+/*
+Main menu for game
+ */
 public class MainMenu extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.content_main_menu);
 
     }
 
