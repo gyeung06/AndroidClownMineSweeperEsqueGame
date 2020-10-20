@@ -12,4 +12,8 @@
     <string name="welc_name">Gabriel Yeung</string>
     <string name="welc_title">Mine Seeker</string>
     <string name="title_activity_main_menu">MainMenu</string>
+    <string name="menu_title">Main Menu</string>
+    <string name="menu_options">Options</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_">play</string>
 </resources>
