@@ -19,6 +19,10 @@ public class OptionsData {
         this.cols = cols;
     }
 
+    public void setMines(int mines) {
+        this.mines = mines;
+    }
+
     public static OptionsData getInstance() {
         if (instance == null) {
             instance = new OptionsData();
