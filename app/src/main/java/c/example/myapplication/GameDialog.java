@@ -3,6 +3,7 @@ package c.example.myapplication;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +21,9 @@ public class GameDialog extends AppCompatDialogFragment {
         DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                Intent intent = MainMenu.makeIntent(getContext());
+                startActivity(intent);
+                getActivity().finish();
             }
         };
 
