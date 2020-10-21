@@ -12,6 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDialogFragment;
 
+/*
+Alert dialog for Game activity
+ */
 public class GameDialog extends AppCompatDialogFragment {
     @NonNull
     @Override

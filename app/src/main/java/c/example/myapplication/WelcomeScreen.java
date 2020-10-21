@@ -12,7 +12,6 @@ import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -21,16 +20,14 @@ import java.util.TimerTask;
 Welcome splash screen for the game
  */
 
-public class MainActivity extends AppCompatActivity {
+public class WelcomeScreen extends AppCompatActivity {
     Timer timer = new Timer();
     private boolean ifSkipped = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.content_main);
 
         iniSkipButton();
         startTimer();
@@ -41,8 +38,9 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = MainMenu.makeIntent(MainActivity.this);
+                Intent intent = MainMenu.makeIntent(WelcomeScreen.this);
                 startActivity(intent);
+                finish();
                 ifSkipped = true;
             }
         });
@@ -53,8 +51,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (!ifSkipped) {
-                    Intent intent = MainMenu.makeIntent(MainActivity.this);
+                    Intent intent = MainMenu.makeIntent(WelcomeScreen.this);
                     startActivity(intent);
+                    finish();
                 }
             }
         }, 5000);

@@ -9,6 +9,8 @@ import android.os.Bundle;
 
 // Credits https://www.flaticon.com/free-icon/cotton-candy_472693
 //  https://www.flaticon.com/free-icon/clown_472683
+// https://freesound.org/people/Higgs01/sounds/428156/
+//https://unsplash.com/photos/dnkM5wPjVdg
 public class Help extends AppCompatActivity {
 
     @Override

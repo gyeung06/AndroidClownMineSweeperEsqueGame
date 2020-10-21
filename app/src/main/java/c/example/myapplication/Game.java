@@ -11,17 +11,26 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import c.example.myapplication.models.GameLogic;
 import c.example.myapplication.models.OptionsData;
 
+/*
+Game Activity
+https://www.youtube.com/watch?v=RnfWPDikBGE for the sound code
+ */
 public class Game extends AppCompatActivity {
 
     public static final String BUTTON_STATES = "buttonStates";
@@ -49,16 +58,20 @@ public class Game extends AppCompatActivity {
         populateButtons();
         updateMinesLeft(false);
         updateScansUsed(false);
+        displayHS();
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if(!getNewGameCheck()){
+            String config = rows + "" + mines;
             resetVisuals();
             updateMinesLeft(false);
             boardUpdate();
             updateScansUsed(false);
+            updateGamesPlayed(false);
+            displayHS();
         }
     }
 
@@ -112,6 +125,7 @@ public class Game extends AppCompatActivity {
         final boolean isFresh = getNewGameCheck();
         if (isFresh) {
             gameLogic.initialize();
+            updateGamesPlayed(true);
         } else {
             refreshBoard();
         }
@@ -180,6 +194,7 @@ public class Game extends AppCompatActivity {
                 saveButtonState(buttonRow, buttonCol, GameLogic.SHOW_SCAN);
                 gameLogic.changeState(buttonRow, buttonCol, GameLogic.SHOW_SCAN);
                 updateScansUsed(true);
+                vibin(100);
                 break;
             case 1:
                 newWidth = button.getWidth();
@@ -188,8 +203,10 @@ public class Game extends AppCompatActivity {
                 saveButtonState(buttonRow, buttonCol, GameLogic.SHOW_BOMB);
                 gameLogic.changeState(buttonRow, buttonCol, GameLogic.SHOW_BOMB);
                 boardUpdate();
+                soundByte();
+                vibin(300);
                 if (updateMinesLeft(true)){
-                    win();
+                    win(false);
                 }
                 break;
             case 2:
@@ -205,6 +222,7 @@ public class Game extends AppCompatActivity {
                 saveButtonState(buttonRow, buttonCol, GameLogic.SHOW_BOMB_SCAN);
                 gameLogic.changeState(buttonRow, buttonCol, GameLogic.SHOW_BOMB_SCAN);
                 updateScansUsed(true);
+                vibin(100);
                 break;
             case 4:
                 newWidth = button.getWidth();
@@ -217,25 +235,33 @@ public class Game extends AppCompatActivity {
         button.setBackground(new BitmapDrawable(resource, scaledBitmap));
     }
 
-    private void win() {
+    private void win(boolean reset) {
+
+        String config = rows + "" + mines;
+        int score = getNumberScans();
+        int highScore = getHighScore(this, config);
+        if (highScore == 0) {
+            saveHighScore(this, score, config);
+        } else if (score < highScore) {
+            saveHighScore(this, score, config);
+        }
+
         SharedPreferences pref = this.getSharedPreferences(BUTTON_STATES, MODE_PRIVATE);
         pref.edit().clear().apply();
-
         pref = this.getSharedPreferences(NEW_GAME_CHECK, MODE_PRIVATE);
         pref.edit().clear().apply();
-
         pref = this.getSharedPreferences(NUM_SCANS, MODE_PRIVATE);
         pref.edit().clear().apply();
-
         pref = this.getSharedPreferences(NUM_MINES, MODE_PRIVATE);
         pref.edit().clear().apply();
-
 
         FragmentManager manager = getSupportFragmentManager();
         GameDialog dialog = new GameDialog();
         dialog.show(manager, "idk");
+
     }
 
+    @SuppressLint("SetTextI18n")
     private void boardUpdate() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -274,6 +300,7 @@ public class Game extends AppCompatActivity {
         return curMines == mines;
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateScansUsed (boolean bump){
         int scans = getNumberScans();
         if (bump){
@@ -282,6 +309,30 @@ public class Game extends AppCompatActivity {
         }
         TextView scanTxt = findViewById(R.id.game_scans);
         scanTxt.setText("# Scans Used: " + scans);
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void updateGamesPlayed (boolean newGame){
+        int games = getGamesPlayed(this);
+        if (newGame) {
+            games++;
+            saveGamesPlayed(this, games);
+        }
+        TextView gamesTxt = findViewById(R.id.games_played);
+        gamesTxt.setText(games + " Games Played");
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void displayHS (){
+        String config = rows + "" + mines;
+        int score = getHighScore(this, config);
+        TextView scoreTxt = findViewById(R.id.game_score);
+        if (score == 0) {
+            scoreTxt.setText("No high score yet");
+        } else {
+            scoreTxt.setText("High Score: " + score);
+        }
+
     }
 
 
@@ -332,13 +383,51 @@ public class Game extends AppCompatActivity {
         SharedPreferences.Editor editor = pref.edit();
         editor.putInt(NUM_M, mines);
         editor.apply();
-
-
     }
 
     private int getMinesFound() {
         SharedPreferences pref = this.getSharedPreferences(NUM_MINES, MODE_PRIVATE);
         return pref.getInt(NUM_M, 0);
+    }
+
+    public static void saveGamesPlayed(Context context, int games) {
+        SharedPreferences pref = context.getSharedPreferences("gamesPlayed", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putInt("games", games);
+        editor.apply();
+    }
+
+    public static int getGamesPlayed(Context context) {
+        SharedPreferences pref = context.getSharedPreferences("gamesPlayed", MODE_PRIVATE);
+        return pref.getInt("games", 0);
+    }
+
+    public static void saveHighScore(Context context, int score, String config){
+        SharedPreferences pref = context.getSharedPreferences("hs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putInt(config, score);
+        editor.apply();
+    }
+
+    public static int getHighScore(Context context, String config) {
+        SharedPreferences pref = context.getSharedPreferences("hs", MODE_PRIVATE);
+        return pref.getInt(config, 0);
+    }
+
+
+    public void soundByte(){
+        MediaPlayer mp = MediaPlayer.create(this, R.raw.yay);
+        mp.start();
+    }
+
+    //https://stackoverflow.com/questions/13950338/how-to-make-an-android-device-vibrate I don't what I could change to make it more unique
+    public void vibin(int time){
+        Vibrator v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(time, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            v.vibrate(time);
+        }
     }
 
     public static Intent makeIntent(Context context) {

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
@@ -34,6 +35,25 @@ public class Options extends AppCompatActivity {
         createRowsButtons();
         getSavedOptionMines(Options.this);
         createMinesButtons();
+        iniResetButton();
+    }
+
+    private void iniResetButton() {
+        Button button = findViewById(R.id.reset_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int[] numOfMines = getResources().getIntArray(R.array.number_of_mines);
+                for (int i = 4; i <= 6; i++){
+                    for (int j = 0; j < numOfMines.length; j++) {
+                        String config = i + "" + numOfMines[j];
+                        Game.saveHighScore(Options.this, 0, config);
+                    }
+                }
+
+                Game.saveGamesPlayed(Options.this, 0);
+            }
+        });
     }
 
 
