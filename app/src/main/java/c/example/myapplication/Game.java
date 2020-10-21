@@ -1,6 +1,7 @@
 package c.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
 
 
 import c.example.myapplication.models.GameLogic;
@@ -25,6 +27,10 @@ public class Game extends AppCompatActivity {
     public static final String BUTTON_STATES = "buttonStates";
     public static final String NEW_GAME_CHECK = "newGame";
     public static final String GAME_KEY = "game";
+    public static final String NUM_SCANS = "numScans";
+    public static final String NUM = "num";
+    public static final String NUM_MINES = "numMines";
+    public static final String NUM_M = "numM";
 
     private OptionsData optionsData = OptionsData.getInstance();
     private int rows = optionsData.getRows();
@@ -41,6 +47,7 @@ public class Game extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         populateButtons();
+        updateMinesLeft(false);
     }
 
     @Override
@@ -48,6 +55,7 @@ public class Game extends AppCompatActivity {
         super.onWindowFocusChanged(hasFocus);
         if(!getNewGameCheck()){
             resetVisuals();
+            updateMinesLeft(false);
             boardUpdate();
         }
     }
@@ -177,6 +185,9 @@ public class Game extends AppCompatActivity {
                 saveButtonState(buttonRow, buttonCol, GameLogic.SHOW_BOMB);
                 gameLogic.changeState(buttonRow, buttonCol, GameLogic.SHOW_BOMB);
                 boardUpdate();
+                if (updateMinesLeft(true)){
+                    win();
+                }
                 break;
             case 2:
                 newWidth = button.getWidth();
@@ -200,7 +211,25 @@ public class Game extends AppCompatActivity {
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
         Resources resource = getResources();
         button.setBackground(new BitmapDrawable(resource, scaledBitmap));
+    }
 
+    private void win() {
+        SharedPreferences pref = this.getSharedPreferences(BUTTON_STATES, MODE_PRIVATE);
+        pref.edit().clear().apply();
+
+        pref = this.getSharedPreferences(NEW_GAME_CHECK, MODE_PRIVATE);
+        pref.edit().clear().apply();
+
+        pref = this.getSharedPreferences(NUM_SCANS, MODE_PRIVATE);
+        pref.edit().clear().apply();
+
+        pref = this.getSharedPreferences(NUM_MINES, MODE_PRIVATE);
+        pref.edit().clear().apply();
+
+
+        FragmentManager manager = getSupportFragmentManager();
+        GameDialog dialog = new GameDialog();
+        dialog.show(manager, "idk");
     }
 
     private void boardUpdate() {
@@ -229,13 +258,26 @@ public class Game extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    private boolean updateMinesLeft(boolean found){
+        int curMines = getMinesFound();
+        if (found) {
+            curMines++;
+            saveMinesFound(curMines);
+        }
+        TextView mineTxt = findViewById(R.id.game_mine);
+        mineTxt.setText("Found " + curMines + " out of " + mines);
+        return curMines == mines;
+    }
+
+
+
+
     private void saveNewGameCheck(boolean newGame){
         SharedPreferences pref = this.getSharedPreferences(NEW_GAME_CHECK, MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         editor.putBoolean(GAME_KEY, newGame);
         editor.apply();
-
-
 
 
     }
@@ -257,6 +299,32 @@ public class Game extends AppCompatActivity {
     private int getStateOfButton(int currentRow, int currentCol) {
         SharedPreferences pref = this.getSharedPreferences(BUTTON_STATES, MODE_PRIVATE);
         return pref.getInt(""+currentRow+""+currentCol, GameLogic.HIDDEN_SCAN);
+    }
+
+    private void saveNumberScans(int scans) {
+        SharedPreferences pref = this.getSharedPreferences(NUM_SCANS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putInt(NUM, scans);
+        editor.apply();
+    }
+
+    private int getNumberScans(){
+        SharedPreferences pref = this.getSharedPreferences(NUM_SCANS, MODE_PRIVATE);
+        return pref.getInt(NUM, 0);
+    }
+
+    private void saveMinesFound(int mines) {
+        SharedPreferences pref = this.getSharedPreferences(NUM_MINES, MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putInt(NUM_M, mines);
+        editor.apply();
+
+
+    }
+
+    private int getMinesFound() {
+        SharedPreferences pref = this.getSharedPreferences(NUM_MINES, MODE_PRIVATE);
+        return pref.getInt(NUM_M, 0);
     }
 
     public static Intent makeIntent(Context context) {

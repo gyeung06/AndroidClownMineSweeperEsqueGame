@@ -57,9 +57,16 @@ public class GameLogic {
         board[curRow][curCol] = state;
     }
 
+    public void setMines(int mines){
+        this.mines = mines;
+    }
+
     public int minesLeft(){
-        mines--;
         return mines;
+    }
+
+    public void mineFound(){
+        mines--;
     }
 
     //Will count itself in the scan value if the state is still hidden bomb for any reason
