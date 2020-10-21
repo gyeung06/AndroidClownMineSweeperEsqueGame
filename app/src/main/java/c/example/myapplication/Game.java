@@ -22,6 +22,10 @@ import c.example.myapplication.models.OptionsData;
 
 public class Game extends AppCompatActivity {
 
+    public static final String BUTTON_STATES = "buttonStates";
+    public static final String NEW_GAME_CHECK = "newGame";
+    public static final String GAME_KEY = "game";
+
     private OptionsData optionsData = OptionsData.getInstance();
     private int rows = optionsData.getRows();
     private int cols = optionsData.getCols();
@@ -36,15 +40,71 @@ public class Game extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-        //TODO Make a true and false thing to see if its a fresh start
-        gameLogic.initialize();
-        //
         populateButtons();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if(!getNewGameCheck()){
+            resetVisuals();
+            boardUpdate();
+        }
+    }
+
+    private void resetVisuals() {
+
+        lockButtonSizes();
+
+        for(int i = 0; i < rows; i++){
+            for (int j = 0; j < cols; j++){
+                Button button = buttons[i][j];
+                int newWidth = 0;
+                int newHeight = 0;
+                Bitmap originalBitmap = null;
+                boolean skip = false;
+                switch (getStateOfButton(i, j)){
+                    case 0:
+                        gameLogic.changeState(i, j, GameLogic.HIDDEN_SCAN);
+                        skip = true;
+                        break;
+                    case 1:
+                        gameLogic.changeState(i, j, GameLogic.HIDDEN_BOMB);
+                        skip = true;
+                        break;
+                    case 2:
+                        newWidth = button.getWidth();
+                        newHeight = button.getHeight();
+                        originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.clown);
+                        break;
+                    case 3:
+                    case 4:
+                        newWidth = button.getWidth();
+                        newHeight = button.getHeight();
+                        originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.cotton_candy);
+                        break;
+                }
+                if (!skip) {
+                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
+                    Resources resource = getResources();
+                    button.setBackground(new BitmapDrawable(resource, scaledBitmap));
+                }
+            }
+        }
     }
 
 
     private void populateButtons() {
         TableLayout table = findViewById(R.id.game_table);
+        //gameLogic.initialize();
+
+
+        final boolean isFresh = getNewGameCheck();
+        if (isFresh) {
+            gameLogic.initialize();
+        } else {
+            refreshBoard();
+        }
 
         for (int i = 0; i < rows; i++){
             TableRow tableRow = new TableRow(this);
@@ -65,6 +125,8 @@ public class Game extends AppCompatActivity {
                 final int butRow = i;
                 button.setPadding(0, 0, 0, 0);
 
+                saveButtonState(butRow,butCol,gameLogic.getState(butRow,butCol));
+
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -74,9 +136,17 @@ public class Game extends AppCompatActivity {
 
                 tableRow.addView(button);
                 buttons[i][j] = button;
-
             }
 
+        }
+        saveNewGameCheck(false);
+    }
+
+    private void refreshBoard() {
+        for (int i = 0; i < rows; i++){
+            for (int j = 0; j < cols; j++){
+                gameLogic.changeState(i,j,getStateOfButton(i,j));
+            }
         }
     }
 
@@ -130,10 +200,17 @@ public class Game extends AppCompatActivity {
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
         Resources resource = getResources();
         button.setBackground(new BitmapDrawable(resource, scaledBitmap));
+
     }
 
     private void boardUpdate() {
-        
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (gameLogic.getState(i,j) == 2 || gameLogic.getState(i,j) == 4){
+                    buttons[i][j].setText("" + gameLogic.scanValue(i,j));
+                }
+            }
+        }
     }
 
     private void lockButtonSizes() {
@@ -153,27 +230,33 @@ public class Game extends AppCompatActivity {
     }
 
     private void saveNewGameCheck(boolean newGame){
-        SharedPreferences pref = this.getSharedPreferences("newGame", MODE_PRIVATE);
+        SharedPreferences pref = this.getSharedPreferences(NEW_GAME_CHECK, MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
-        editor.putBoolean("game", newGame);
+        editor.putBoolean(GAME_KEY, newGame);
         editor.apply();
+
+
+
+
     }
 
     private boolean getNewGameCheck(){
-          SharedPreferences pref = this.getSharedPreferences("newGame", MODE_PRIVATE);
-          return pref.getBoolean("game", true);
+          SharedPreferences pref = this.getSharedPreferences(NEW_GAME_CHECK, MODE_PRIVATE);
+          return pref.getBoolean(GAME_KEY, true);
     }
 
     private void saveButtonState(int currentRow, int currentCol, int state) {
-        SharedPreferences pref = this.getSharedPreferences("buttonStates", MODE_PRIVATE);
+        SharedPreferences pref = this.getSharedPreferences(BUTTON_STATES, MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
-        editor.putInt("" + ( currentRow * cols + currentCol), state);
+        editor.putInt(""+currentRow+""+currentCol, state);
         editor.apply();
+
+
     }
 
     private int getStateOfButton(int currentRow, int currentCol) {
-        SharedPreferences prefs = this.getSharedPreferences("buttonStates", MODE_PRIVATE);
-        return prefs.getInt("" + ( currentRow * cols + currentCol), 0);
+        SharedPreferences pref = this.getSharedPreferences(BUTTON_STATES, MODE_PRIVATE);
+        return pref.getInt(""+currentRow+""+currentCol, GameLogic.HIDDEN_SCAN);
     }
 
     public static Intent makeIntent(Context context) {
