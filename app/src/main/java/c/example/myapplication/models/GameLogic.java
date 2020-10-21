@@ -11,10 +11,11 @@ Game logic class for the UI
 public class GameLogic {
 
     //states of button
-    private final int HIDDEN_EMPTY = 0;
-    private final int HIDDEN_BOMB = 1;
-    private final int SHOW_EMPTY = 2;
-    private final int SHOW_BOMB = 3;
+    public static final int HIDDEN_SCAN = 0;
+    public static final int HIDDEN_BOMB = 1;
+    public static final int SHOW_SCAN = 2;
+    public static final int SHOW_BOMB = 3;
+    public static final int SHOW_BOMB_SCAN = 4;
 
     private int rows;
     private int cols;
@@ -22,24 +23,18 @@ public class GameLogic {
 
     private int[][] board;
 
-    public int[][] getBoardState() {
-        return board;
-    }
-
     //Disable access to general constructor
     private GameLogic(){}
 
-    public GameLogic(int rows, int cols, int mines, boolean freshStart) {
+    public GameLogic(int rows, int cols, int mines) {
         this.rows = rows;
         this.cols = cols;
         this.mines = mines;
-        if (freshStart) {
-            initialize();
-        }
+
+        board = new int[rows][cols];
     }
 
-    private void initialize() {
-        int[][] board = new int[rows][cols];
+    public void initialize() {
         //Create and place mines
         ArrayList<Integer> minesList = new ArrayList<Integer>();
         for (int i = 0; i < cols*rows; i++) {
@@ -48,18 +43,38 @@ public class GameLogic {
         Collections.shuffle(minesList);
         for (int i = 0; i < mines; i++){
             int place = minesList.get(i);
-            int placeRow = place/rows;
+            int placeRow = place/cols;
             int placeCols = place%cols;
             board[placeRow][placeCols] = HIDDEN_BOMB;
         }
+    }
 
-        for (int i = 0; i < rows; i++){
-            for (int j = 0; j < cols; j++){
-                if (board[i][j] != HIDDEN_BOMB) {
-                    board[i][j] = HIDDEN_EMPTY;
-                }
+    public int getState (int curRow, int curCol){
+        return board[curRow][curCol];
+    }
+
+    public void changeState (int curRow, int curCol, int state) {
+        board[curRow][curCol] = state;
+    }
+
+    public int minesLeft(){
+        mines--;
+        return mines;
+    }
+
+    //Will count itself in the scan value if the state is still hidden bomb for any reason
+    public int scanValue (int curRow, int curCol) {
+        int count = 0;
+        for (int i = 0; i < cols; i++){
+            if (board[curRow][i] == HIDDEN_BOMB){
+                count++;
             }
         }
-
+        for (int j = 0; j < rows; j++){
+            if (board[j][curCol] == HIDDEN_BOMB){
+                count++;
+            }
+        }
+        return count;
     }
 }
