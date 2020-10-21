@@ -22,18 +22,18 @@ public class Options extends AppCompatActivity {
 
     private static final String ROW_PREFS = "RowPrefs";
     private static final String ROW_CHOICE = "rowChoice";
-    private OptionsData optionsData = OptionsData.getInstance();
+
+    private static OptionsData optionsData = OptionsData.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_options);
 
-        getSavedOptionRows();
+        getSavedOptionRows(Options.this);
         createRowsButtons();
-        getSavedOptionMines();
+        getSavedOptionMines(Options.this);
         createMinesButtons();
-
     }
 
 
@@ -51,13 +51,13 @@ public class Options extends AppCompatActivity {
                 public void onClick(View v) {
                     Toast.makeText(Options.this, option + " selected", Toast.LENGTH_SHORT).show();
                     saveRowChoice(option);
-                    getSavedOptionRows();
+                    getSavedOptionRows(Options.this);
                 }
             });
 
             group.addView(button);
 
-            if (option.equals(getSavedOptionRows())) {
+            if (option.equals(getSavedOptionRows(Options.this))) {
                 button.setChecked(true);
             }
         }
@@ -71,9 +71,9 @@ public class Options extends AppCompatActivity {
     }
 
     //Also updates the OptionsData
-    private String getSavedOptionRows() {
-        SharedPreferences prefs = this.getSharedPreferences(ROW_PREFS, MODE_PRIVATE);
-        String text = prefs.getString(ROW_CHOICE, "4 ");
+    public static String getSavedOptionRows(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(ROW_PREFS, MODE_PRIVATE);
+        String text = prefs.getString(ROW_CHOICE, "4");
         switch (text.charAt(0)) {
             case '4':
                 optionsData.setRowsAndCols(4, 6);
@@ -85,9 +85,9 @@ public class Options extends AppCompatActivity {
                 optionsData.setRowsAndCols(6, 15);
                 return text;
             default:
-                Toast.makeText(Options.this, "wat", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "wat", Toast.LENGTH_SHORT).show();
         }
-        return getResources().getString(R.string.row_default);
+        return text;
     }
 
 
@@ -105,13 +105,13 @@ public class Options extends AppCompatActivity {
                 public void onClick(View v) {
                     Toast.makeText(Options.this, mines + " mines selected", Toast.LENGTH_SHORT).show();
                     saveMineChoice(mines);
-                    getSavedOptionMines();
+                    getSavedOptionMines(Options.this);
                 }
             });
 
             group.addView(button);
 
-            if (mines == getSavedOptionMines()) {
+            if (mines == getSavedOptionMines(Options.this)) {
                 button.setChecked(true);
             }
         }
@@ -124,8 +124,8 @@ public class Options extends AppCompatActivity {
         editor.apply();
     }
 
-    private int getSavedOptionMines() {
-        SharedPreferences prefs = this.getSharedPreferences("NumPrefs", MODE_PRIVATE);
+    public static int getSavedOptionMines(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("NumPrefs", MODE_PRIVATE);
         int num = prefs.getInt("mines", 6);
         optionsData.setMines(num);
         return num;
