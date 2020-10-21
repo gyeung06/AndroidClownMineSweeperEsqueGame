@@ -107,5 +107,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toTopOf="@+id/guideline4"
-        app:srcCompat="@drawable/menu" />
+        app:srcCompat="@drawable/cotton_candy" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,3 +13,9 @@ Functional "May's"
 3.14 Displays highscore for all configs
 
 5.4 Reset games and score
+
+Non-Functional "May's"
+
+1.3 Fair Theme
+
+5.5 Game saves state if app is closed
