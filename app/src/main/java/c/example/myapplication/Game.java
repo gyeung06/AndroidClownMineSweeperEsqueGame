@@ -48,6 +48,7 @@ public class Game extends AppCompatActivity {
         setContentView(R.layout.activity_game);
         populateButtons();
         updateMinesLeft(false);
+        updateScansUsed(false);
     }
 
     @Override
@@ -57,6 +58,7 @@ public class Game extends AppCompatActivity {
             resetVisuals();
             updateMinesLeft(false);
             boardUpdate();
+            updateScansUsed(false);
         }
     }
 
@@ -177,6 +179,7 @@ public class Game extends AppCompatActivity {
                 button.setText("" + gameLogic.scanValue(buttonRow, buttonCol));
                 saveButtonState(buttonRow, buttonCol, GameLogic.SHOW_SCAN);
                 gameLogic.changeState(buttonRow, buttonCol, GameLogic.SHOW_SCAN);
+                updateScansUsed(true);
                 break;
             case 1:
                 newWidth = button.getWidth();
@@ -201,6 +204,7 @@ public class Game extends AppCompatActivity {
                 button.setText("" + gameLogic.scanValue(buttonRow, buttonCol));
                 saveButtonState(buttonRow, buttonCol, GameLogic.SHOW_BOMB_SCAN);
                 gameLogic.changeState(buttonRow, buttonCol, GameLogic.SHOW_BOMB_SCAN);
+                updateScansUsed(true);
                 break;
             case 4:
                 newWidth = button.getWidth();
@@ -268,6 +272,16 @@ public class Game extends AppCompatActivity {
         TextView mineTxt = findViewById(R.id.game_mine);
         mineTxt.setText("Found " + curMines + " out of " + mines);
         return curMines == mines;
+    }
+
+    private void updateScansUsed (boolean bump){
+        int scans = getNumberScans();
+        if (bump){
+            scans++;
+            saveNumberScans(scans);
+        }
+        TextView scanTxt = findViewById(R.id.game_scans);
+        scanTxt.setText("# Scans Used: " + scans);
     }
 
 
